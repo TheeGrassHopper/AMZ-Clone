@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Payment.css';
 import { useStateValue } from "./StateProvider";
 import CheckoutProduct from "./CheckoutProduct";
+import { Link, useHistory } from "react-router-dom";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import {getBasketTotal} from "./reducer";
+import axios from "./axios";
 
 import CurrencyFormat from "react-currency-format";
 
@@ -11,12 +13,45 @@ function Payment() {
     const [{ basket, user }, dispatch] = useStateValue();
     const stripe = useElements();
     const elements = useElements();
+    const history = useHistory();
 
+    const [succeeded, setSucceeded] = useState(false);
+    const [processing, setProcessing] =  useState("");
     const [error, setError] = useState(null);
     const [disabled, setDisabled] = useState(true);
+    const [clientSecret, setClientSecret] = useState(true);
 
-    const handleSubmit = event => {
+    // The Effect Hook lets you perform side effects in function components:
+    //
+    useEffect(()=>{
+        const getClientSecret = async () => {
+            const response = await axios({
+                method: 'post',
+                url: `/payment/create?total=${getBasketTotal(basket) * 100}`
+            });
+            //  this will update the the strip secret
+            setClientSecret(response.data.clientSecret)
+        }
+        getClientSecret();
+    }, [basket]);
 
+    const handleSubmit = async (event) => {
+        // do all the fancy strip stuff
+        event.preventDefault();
+        setProcessing(true)
+
+        const payload = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+                card: elements.getElement(CardElement)
+            }
+        }).then(({ paymentIntent }) =>{
+            // paymentIntent = payment confirmation
+            setSucceeded(true);
+            setError(null);
+            setProcessing(false);
+
+            history.replace('/orders')
+        })
     };
 
     const handleChange = event => {
@@ -59,6 +94,7 @@ function Payment() {
                     <div className="payment__details">
                         <form onSubmit={handleSubmit}>
                             <CardElement onChange={handleChange} />
+
                             <div className="payment__priceContainer">
                                 <CurrencyFormat
                                     renderText={(value)=>(
@@ -70,7 +106,12 @@ function Payment() {
                                     thousandSeparator={true}
                                     prefix={"$"}
                                     />
+                                    <button disabled={processing || disabled || succeeded }>
+                                        <span>{processing ? <p>Processing</p> : "Buy Now" }</span>
+                                    </button>
                             </div>
+                            {/* Error */}
+                            {error && <div> {error} </div>}
                         </form>
                     </div>
                 </div>
