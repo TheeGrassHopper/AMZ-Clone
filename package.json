@@ -13,6 +13,7 @@
     "axios": "^0.21.0",
     "firebase": "^7.24.0",
     "flip": "^1.0.0",
+    "moment": "^2.29.1",
     "move": "^0.4.9",
     "react": "^16.13.1",
     "react-currency-format": "^1.0.0",

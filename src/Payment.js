@@ -6,6 +6,7 @@ import { Link, useHistory } from "react-router-dom";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import {getBasketTotal} from "./reducer";
 import axios from "./axios";
+import { db }  from "./firebase";
 
 import CurrencyFormat from "react-currency-format";
 
@@ -40,22 +41,36 @@ function Payment() {
 
     const handleSubmit = async (event) => {
         // do all the fancy strip stuff
-        event.preventDefault();
-        setProcessing(true);
+        if(user) {
+            event.preventDefault();
+            setProcessing(true);
 
-        const payload = await stripe.confirmCardPayment(clientSecret, {
-            payment_method: {
-                card: elements.getElement(CardElement)
-            }
-        }).then(({ paymentIntent }) =>{
-            // paymentIntent = payment confirmation
+            const payload = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: elements.getElement(CardElement)
+                }
+            }).then(({ paymentIntent }) =>{
+                // paymentIntent = payment confirmation
+                db.collection('users').doc(user?.uid).collection('orders').doc(paymentIntent.id).set({ 
+                        basket: basket,
+                        amount: paymentIntent.amount,
+                        created: paymentIntent.created
+                })
+                setSucceeded(true);
+                setError(null);
+                setProcessing(false);
 
-            setSucceeded(true);
-            setError(null);
-            setProcessing(false);
 
-            history.replace('/orders')
-        })
+
+                dispatch({
+                    type: 'EMPTY_BASKET'
+                })
+
+                history.replace('/orders')
+            })
+        } else {
+            history.push('/login')
+      }
     };
 
     const handleChange = event => {
@@ -97,8 +112,8 @@ function Payment() {
                     </div>
                     <div className="payment__details">
                         <form onSubmit={handleSubmit}>
+                        <p>Test Card Number: 4242 4242 4242 4242</p><br/><p>MM/YY: 24/24</p><br/><p>CVC: 424</p><br/>
                             <CardElement onChange={handleChange} />
-
                                <div className='payment__priceContainer'>
                                     <CurrencyFormat
                                         renderText={(value) => (
