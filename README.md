@@ -1,4 +1,15 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# AMZ-Clone 
+## Check it out: [Amazon.com](https://store-a5366.web.app/) and Buy something on us :)
+
+## Project overview
+- Firebase could functions
+- Firebase database
+- Firebase login
+- Functioning payment processing with strip
+- The Orders History Page
+- User Authentication 
+- Fully functional e-commerce site with edgecases 
+
 
 ## Available Scripts
 
@@ -67,5 +78,5 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
 # AMZ-Clone
-Check it out: [Amazon.com](https://react-142720.web.app)
+Check it out: [Amazon.com](https://store-a5366.web.app/)
 
